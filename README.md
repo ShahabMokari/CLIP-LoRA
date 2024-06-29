@@ -43,7 +43,9 @@ conda activate CLIP-LoRA
 ```
 And install Pytorch for instance with:
 ```bash
-pip3 install torch==2.0.1 torchaudio==2.0.2 torchvision==0.15.2
+pip3 install torch==2.0.1 torchaudio==2.0.2 torchvision==0.15.2 tqdm ftfy regex gdown scipy numpy==1.24.0
+pip3 install torch==2.0.1 torchaudio==2.0.2 torchvision==0.15.2 --index-url https://download.pytorch.org/whl/cu118
+
 ```
 
 ### Datasets installation
@@ -126,3 +128,7 @@ For any inquiries, feel free to [create an issue](https://github.com/MaxZanella/
 We express our gratitude to the [CoOp](https://github.com/KaiyangZhou/CoOp) and [Tip-Adapter](https://github.com/gaopengcuhk/Tip-Adapter) authors for their open-source contribution.
 
 
+### How to Run Shahab
+```bash
+python main.py --root_path data/ --dataset oxford_flowers --seed 1\n
+```

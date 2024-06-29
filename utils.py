@@ -18,13 +18,13 @@ def clip_classifier(classnames, template, clip_model):
             # Tokenize the prompts
             classname = classname.replace('_', ' ')
             texts = [t.format(classname) for t in template]
-            texts = clip.tokenize(texts).cuda()
+            texts = clip.tokenize(texts) #.cuda()
             class_embeddings = clip_model.encode_text(texts)
             class_embeddings /= class_embeddings.norm(dim=-1, keepdim=True)
             class_embedding = class_embeddings.mean(dim=0)
             class_embedding /= class_embedding.norm()
             clip_weights.append(class_embedding)
-        clip_weights = torch.stack(clip_weights, dim=1).cuda()
+        clip_weights = torch.stack(clip_weights, dim=1)#.cuda()
         
     return clip_weights
 
@@ -33,7 +33,8 @@ def pre_load_features(clip_model, loader):
     features, labels = [], []
     with torch.no_grad():
         for i, (images, target) in enumerate(tqdm(loader)):
-            images, target = images.cuda(), target.cuda()
+            #images, target = images.cuda(), target.cuda()
+            images, target = images, target
             image_features = clip_model.encode_image(images)
             image_features /= image_features.norm(dim=-1, keepdim=True)
             features.append(image_features.cpu())
