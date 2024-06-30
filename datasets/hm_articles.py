@@ -3,7 +3,8 @@ import random
 from scipy.io import loadmat
 from collections import defaultdict
 
-from .oxford_pets import OxfordPets
+#from .oxford_pets import OxfordPets
+
 from .utils import Datum, DatasetBase, read_json
 
 """
@@ -24,8 +25,9 @@ class HmArticles(DatasetBase):
 
         self.template = template
 
-        train, val, test = OxfordPets.read_split(self.split_path, self.image_dir)
+        train, val, test = HmArticles.read_split(self.split_path, self.image_dir)
         n_shots_val = min(num_shots, 4)
+        # # dict of label -> list of items (number of shots)
         val = self.generate_fewshot_dataset(val, num_shots=n_shots_val)
         train = self.generate_fewshot_dataset(train, num_shots=num_shots)
         
@@ -67,4 +69,27 @@ class HmArticles(DatasetBase):
             val.extend(_collate(impaths[n_train:n_train+n_val], label, cname))
             test.extend(_collate(impaths[n_train+n_val:], label, cname))
         
+        return train, val, test
+
+    # Borrowed form OxfordPets
+    @staticmethod
+    def read_split(filepath, path_prefix):
+        def _convert(items):
+            out = []
+            for impath, label, classname in items:
+                impath = os.path.join(path_prefix, impath)
+                item = Datum(
+                    impath=impath,
+                    label=int(label),
+                    classname=classname
+                )
+                out.append(item)
+            return out
+
+        print(f'Reading split from {filepath}')
+        split = read_json(filepath)
+        train = _convert(split['train'])
+        val = _convert(split['val'])
+        test = _convert(split['test'])
+
         return train, val, test

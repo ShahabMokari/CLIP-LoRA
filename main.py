@@ -37,7 +37,7 @@ def get_custom_arguments():
     args.alpha = 1
     args.dropout_rate = 0.25
 
-    args.save_path = None
+    args.save_path = "lora_saved/"
     args.filename = 'lora_weights'
     args.eval_only = False
 

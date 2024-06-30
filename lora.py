@@ -161,7 +161,7 @@ def run_lora(args, clip_model, logit_scale, dataset, train_loader, val_loader, t
         """
     
     acc_test = evaluate_lora(args, clip_model, test_loader, dataset)
-    print("**** Final test accuracy: {:.2f}. ****\n".format(acc_test))
+    print("**** Final LORA test accuracy: {:.2f}. ****\n".format(acc_test))
     
     if args.save_path != None:
         save_lora(args, list_lora_layers)

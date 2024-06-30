@@ -231,6 +231,7 @@ class DatasetBase:
         output = []
 
         for data_source in data_sources:
+            # dict of label -> list of items
             tracker = self.split_dataset_by_label(data_source)
             dataset = []
 
@@ -243,7 +244,7 @@ class DatasetBase:
                     else:
                         sampled_items = items
                 dataset.extend(sampled_items)
-
+            # we sample n_shots from each label
             output.append(dataset)
 
         if len(output) == 1:
