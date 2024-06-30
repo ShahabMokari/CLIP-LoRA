@@ -12,7 +12,10 @@ def evaluate_lora(args, clip_model, loader, dataset):
         template = dataset.template[0] 
         texts = [template.format(classname.replace('_', ' ')) for classname in dataset.classnames]
         with torch.amp.autocast(device_type="cuda", dtype=torch.float16):
-            texts = clip.tokenize(texts)#cuda()
+            if torch.cuda.is_available():
+                texts = clip.tokenize(texts).cuda()
+            else:
+                texts = clip.tokenize(texts)  # cuda()
             class_embeddings = clip_model.encode_text(texts)
         text_features = class_embeddings/class_embeddings.norm(dim=-1, keepdim=True)
 
@@ -20,7 +23,11 @@ def evaluate_lora(args, clip_model, loader, dataset):
     tot_samples = 0
     with torch.no_grad():
         for i, (images, target) in enumerate(loader):
-            images, target = images.cuda(), target.cuda()
+            if torch.cuda.is_available():
+                images, target = images.cuda(), target.cuda()
+            else:
+                images, target = images, target
+
             with torch.amp.autocast(device_type="cuda", dtype=torch.float16):
                 image_features = clip_model.encode_image(images)
             image_features = image_features/image_features.norm(dim=-1, keepdim=True)
@@ -47,9 +54,13 @@ def run_lora(args, clip_model, logit_scale, dataset, train_loader, val_loader, t
     # Pre-load test features
     print("\nLoading visual features and labels from test set.")
     test_features, test_labels = pre_load_features(clip_model, test_loader)
-    
-    test_features = test_features#.cuda()
-    test_labels = test_labels#.cuda()
+
+    if torch.cuda.is_available():
+        test_features = test_features.cuda()
+        test_labels = test_labels.cuda()
+    else:
+        test_features = test_features.cpu()
+        test_labels = test_labels.cpu()
  
     # Zero-shot CLIP
     clip_logits = logit_scale * test_features @ textual_features
@@ -61,7 +72,10 @@ def run_lora(args, clip_model, logit_scale, dataset, train_loader, val_loader, t
     
     
     list_lora_layers = apply_lora(args, clip_model)
-    clip_model = clip_model#.cuda()
+    if torch.cuda.is_available():
+        clip_model = clip_model.cuda()
+    else:
+        clip_model = clip_model  # .cuda()
     
     if args.eval_only:
         load_lora(args, list_lora_layers)
@@ -93,11 +107,16 @@ def run_lora(args, clip_model, logit_scale, dataset, train_loader, val_loader, t
             
             template = dataset.template[0]
             texts = [template.format(classname.replace('_', ' ')) for classname in dataset.classnames]
-            #images, target = images.cuda(), target.cuda()
-            images, target = images, target
+            if torch.cuda.is_available():
+                images, target = images.cuda(), target.cuda()
+            else:
+                images, target = images, target
             if args.encoder == 'text' or args.encoder == 'both':
                 with torch.amp.autocast(device_type="cuda", dtype=torch.float16):
-                    texts = clip.tokenize(texts)#.cuda()
+                    if torch.cuda.is_available():
+                        texts = clip.tokenize(texts).cuda()
+                    else:
+                        texts = clip.tokenize(texts)  # .cuda()
                     class_embeddings = clip_model.encode_text(texts)
                 text_features = class_embeddings/class_embeddings.norm(dim=-1, keepdim=True)
                 

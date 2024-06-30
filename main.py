@@ -9,11 +9,49 @@ from run_utils import *
 from lora import run_lora
 
 
+class Args:
+    pass
+
+def get_custom_arguments():
+    args = Args()
+
+
+    args.seed = 1
+    # Dataset arguments
+    args.root_path = "data"
+
+    #args.dataset = "oxford_flowers"
+    args.dataset = "hm"
+    args.shots = 1 #4
+    # Model arguments
+    args.backbone = 'ViT-B/16'
+    # Training arguments
+    args.lr = 2e-4
+    args.n_iters = 2
+    args.batch_size =  1 #32
+    # LoRA arguments
+    args.position = 'mid'
+    args.encoder = "both"
+    args.params = 'q'
+    args.r = 2
+    args.alpha = 1
+    args.dropout_rate = 0.25
+
+    args.save_path = None
+    args.filename = 'lora_weights'
+    args.eval_only = False
+
+    # CPU or CUDA
+    args.core = "CPU"
+
+    return args
+
+
 def main():
 
     # Load config file
-    args = get_arguments()
-    
+    #args = get_arguments()
+    args = get_custom_arguments()
     set_random_seed(args.seed)
     
     # CLIP
@@ -35,7 +73,7 @@ def main():
         
     train_loader = None
     if not args.eval_only:
-        train_tranform = transforms.Compose([
+        train_transform = transforms.Compose([
             transforms.RandomResizedCrop(size=224, scale=(0.08, 1), interpolation=transforms.InterpolationMode.BICUBIC),
             transforms.RandomHorizontalFlip(p=0.5),
             transforms.ToTensor(),
@@ -45,9 +83,10 @@ def main():
         if args.dataset == 'imagenet':
             train_loader = torch.utils.data.DataLoader(dataset.train_x, batch_size=args.batch_size, num_workers=8, shuffle=True, pin_memory=True)
         else:
-            train_loader = build_data_loader(data_source=dataset.train_x, batch_size=args.batch_size, tfm=train_tranform, is_train=True, shuffle=True, num_workers=8)
+            train_loader = build_data_loader(data_source=dataset.train_x, batch_size=args.batch_size, tfm=train_transform, is_train=True, shuffle=True, num_workers=8)
 
     run_lora(args, clip_model, logit_scale, dataset, train_loader, val_loader, test_loader)
 
 if __name__ == '__main__':
     main()
+    print ("------- Done ------------------")
